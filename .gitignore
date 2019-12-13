@@ -1,0 +1,12 @@
+node_modules
+.DS_Store
+dist/*
+lib/*
+opt/*
+coverage/*
+*.xml
+.idea
+npm-debug.log
+.vscode
+.history
+/dist
