@@ -1,0 +1,60 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: gray;
+}
+
+.title {
+  color: black;
+  text-align: center;
+  font-size: 50px;
+  margin-bottom: 30px;
+}
+
+.title:after {
+  content: "Game";
+  animation: dots 1s steps(8, end) infinite;
+}
+
+@keyframes dots {
+
+  0%,
+  20% {
+    color: rgba(0, 0, 0, 0);
+    text-shadow: 0.25em 0 0 rgba(0, 0, 0, 0), 0.5em 0 0 rgba(1, 1, 1, 1);
+  }
+
+  40% {
+    color: grey;
+    text-shadow: 0.25em 0 0 rgba(0, 0, 0, 0), 0.5em 0 0 rgba(0, 0, 0, 0);
+  }
+
+  60% {
+    text-shadow: 0.25em 0 0 grey, 0.5em 0 0 rgba(0, 0, 0, 0);
+  }
+
+  80%,
+  100% {
+    text-shadow: 0.25em 0 0 grey, 0.5em 0 0 grey;
+  }
+}
+
+.score {
+  width: 150px;
+  height: 60px;
+  padding: 14px;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid black;
+  margin: 10px auto;
+}
+
+.score__info {
+  color: limegreen;
+  font-size: 25px;
+}
