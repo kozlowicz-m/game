@@ -1,21 +1,40 @@
 const canvas = document.querySelector('#canvas');
-const context = canvas.getContext('2d');
+const ctx = canvas.getContext('2d');
 
 let sizeBlock = 10;
-let width = 20;
-let height = 20;
+
+let width = canvas.width;
+let height = canvas.height;
 let widthBlock = width / sizeBlock;
 let heightBlock = height / sizeBlock;
 let score = 0;
 
 let printBorder = function () {
-    context.fillStyle = 'black';
-    context.fillRect(0, 0, width, sizeBlock);
-    context.fillRect(0, height - sizeBlock, width, sizeBlock);
-    context.fillRect(0, 0, sizeBlock, height);
-    context.fillRect(width - sizeBlock, 0, sizeBlock, width);
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, width, sizeBlock);
+    ctx.fillRect(0, height - sizeBlock, width, sizeBlock);
+    ctx.fillRect(0, 0, sizeBlock, height);
+    ctx.fillRect(width - sizeBlock, 0, sizeBlock, width);
 };
 
+let circle = function (x, y, radius, fillCircle) {
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Match.PI * 2, false);
+    if (fillCircle) {
+        ctx.fill();
+    } else {
+        ctx.stroke();
+    }
+};
+
+let gameOver = function () {
+    clearTimeout(clear);
+    ctx.font = '32px Courier';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'red';
+    ctx.textAlign = 'center';
+    ctx.fillText('GAME OVER', width / 2, height / 2);
+};
 
 class Block {
     constructor(col, row) {
@@ -25,15 +44,22 @@ class Block {
 }
 
 Block.prototype.printSquare = function (color) {
-    let x = this.col / sizeBlock;
-    let y = this.row / sizeBlock;
-    context.fillStyle = color;
-    context.fillRect(x, y, sizeBlock, sizeBlock);
-}
+    let x = this.col * sizeBlock;
+    let y = this.row * sizeBlock;
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, sizeBlock, sizeBlock);
+};
+
+Block.prototype.printCircle = function (color) {
+    let centerX = this.col * sizeBlock + sizeBlock / 2;
+    let centerY = this.row * sizeBlock + sizeBlock / 2;
+    ctx.fillStyle = color;
+    circle(centerX, centerY, sizeBlock / 2, true);
+};
 
 Block.prototype.compare = function (otherBlock) {
     return this.col === otherBlock.col && this.row === otherBlock.row
-}
+};
 
 class Snake {
     constructor() {
@@ -46,6 +72,12 @@ class Snake {
         this.nextDirection = 'right';
     }
 }
+
+Snake.prototype.print = function () {
+    for (let i = 0; i < this.segments.length; i++) {
+        this.segments[i].printSquare('black')
+    }
+};
 
 Snake.prototype.move = function () {
     let head = this.segments[0];
@@ -71,7 +103,7 @@ Snake.prototype.move = function () {
     this.segments.unshift(newHead);
 
     if (newHead.compare(apple.position)) {
-        score++
+        score++;
         apple.move();
     } else {
         this.segments.pop()
@@ -79,122 +111,78 @@ Snake.prototype.move = function () {
 };
 
 Snake.prototype.checkCollision = function (head) {
+    leftCollision = (head.col === 0);
+    rightCollision = (head.col === widthBlock - 1);
+    topCollision = (head.row === 0);
+    bottomCollision = (head.row === heightBlock - 1);
 
-}
+    let wallCollision = leftCollision || rightCollision || topCollision || bottomCollision
+
+    let tailCollision = false;
+
+    for (let i = 0; i < this.segments.length; i++) {
+        if (head.compare(this.segments[i])) {
+            tailCollision = true;
+        }
+    }
+    return wallCollision || tailCollision;
+};
+
+Snake.prototype.setDirection = function (newDirection) {
+    if (this.direction === 'top' && newDirection === 'bottom') {
+        return;
+    } else if (this.direction === 'right' && newDirection === 'left') {
+        return;
+    } else if (this.direction === 'left' && newDirection === 'right') {
+        return;
+    } else if (this.direction === 'bottom' && newDirection === 'top') {
+        return;
+    }
+    this.nextDirection = newDirection;
+};
+
 
 class Apple {
     constructor() {
-        this.canvas = canvas;
-        this.context = context;
-        this.x = Math.floor(Math.random() * 10);
-        this.y = Math.floor(Math.random() * 10);
-
+        let x = Math.floor(Math.random() * (widthBlock - 2)) + 1;
+        let y = Math.floor(Math.random() * (heightBlock - 2)) + 1;
+        this.position = new Block(x, y);
     }
 }
 
+Apple.prototype.print = function () {
+    this.position.printCircle('green')
+};
 
-class Game {
-    constructor() {
-        this.board = document.querySelectorAll('board');
-        this.snake = new Snake();
-        this.apple = new Apple();
-        this.score = 0;
-        let self = this;
-        this.index = function (x, y) {
-            return x + (y * 10);
-        };
+Apple.prototype.move = function (occupiedSegments) {
+    let randomCol = Math.floor(Math.random() *
+        (widthBlock - 2)) + 1;
+    let randomRow = Math.floor(Math.random() *
+        (heightBlock - 2)) + 1;
+    this.position = new Block(randomCol, randomRow);
 
-        this.showSnake = function showSnake() {
-            this.hideVisibleSnake();
-            //this.board[this.index(this.snake.x, this.snake.y)].classList.add('snake');
-        };
-
-        this.showCoin = function showCoin() {
-            // this.board[this.index(this.apple.x, this.apple.y)].classList.add('apple');
-        };
-
-        this.startGame = function startGame() {
-            this.idInterval = setInterval(function () {
-                self.moveSnake();
-            }, 250);
-        };
-
-        this.moveSnake = function moveSnake() {
-            if (this.snake.direction === 'right') {
-                this.snake.x = this.snake.x + 1;
-            } else if (this.snake.direction === 'left') {
-                this.snake.x = this.snake.x - 1;
-            } else if (this.snake.direction === 'down') {
-                this.snake.y = this.snake.y + 1;
-            } else if (this.snake.direction === 'up') {
-                this.snake.y = this.snake.y - 1;
-            }
-
-            this.checkAppleCollision();
-            let bool = this.gameOver();
-            if (!bool) {
-                this.showSnake();
-                this.showApple();
-            }
-        };
-        this.checkAppleCollision = function checkAppleCollision() {
-            if (this.snake.x == this.apple.x && this.snake.y == this.apple.y) {
-                let apple = document.querySelector('.apple');
-                apple.classList.remove('apple');
-                snake.classList.add('snake') //powiekszenie snake
-                this.score++;
-                this.apple = new Apple();
-                this.showApple();
-                this.updateScore(this.score);
-            }
-        };
-
-        this.checkCollision = function checkCollision() {
-
+    for (let i = 0; i < occupiedSegments.length; i++) {
+        if (this.position.compare(occupiedSegments)) {
+            this.move(occupiedSegments);
+            return;
         }
-
-        this.gameOver = function gameOver() {
-            if (this.snake.x < 0 || this.snake.x > 9 || this.snake.y < 0 || this.snake.y > 9) {
-                clearInterval(this.idInterval);
-                alert('KONIEC GRY');
-                return true;
-            }
-        };
-
-        this.hideVisibleSnake = function hideVisibleSnake() {
-            let hide = document.querySelector('.snake');
-            if (hide != null) {
-                hide.classList.remove('snake');
-            }
-        };
-        this.turnSnake = function turnSnake(event) {
-            switch (event.which) {
-                case 37:
-                    this.snake.direction = 'left';
-                    break;
-                case 38:
-                    this.snake.direction = 'up';
-                    break;
-                case 39:
-                    this.snake.direction = 'right';
-                    break;
-                case 40:
-                    this.snake.direction = 'down';
-                    break;
-            }
-        };
-        this.updateScore = function updateScore(points) {
-            let score = document.querySelector('score__info');
-            score.innerText = points;
-        };
     }
-}
+};
+
+let snake = new Snake();
+let apple = new Apple();
+
+let direction = {
+    37: 'left',
+    38: 'top',
+    39: 'right',
+    40: 'bottom',
+};
 
 document.addEventListener('keydown', function (event) {
-    play.turnSnake(event);
-});
+    let newDirection = direction[event.keyCode];
 
-let play = new Game();
-// play.showSnake();
-// play.startGame();
-printBorder();
+    if (newDirection !== undefined) {
+        snake.setDirection(newDirection);
+    }
+});
