@@ -1,4 +1,4 @@
-* {
+*{
   box-sizing: border-box;
 }
 
@@ -6,6 +6,11 @@ body {
   margin: 0;
   padding: 0;
   background: gray;
+}
+
+#canvas {
+  margin-left: 300px;
+  border: 1px solid;
 }
 
 .title {
