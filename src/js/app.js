@@ -168,14 +168,12 @@ let id = setInterval(function() {
   printBorder();
 }, 100);
 
-
 let direction = {
   37: 'left',
   38: 'top',
   39: 'right',
   40: 'bottom'
 };
-
 
 document.addEventListener('keydown', function (event) {
   play.direction(event)
