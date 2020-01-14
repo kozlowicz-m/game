@@ -9,13 +9,6 @@ let widthBlock = width / sizeBlock;
 let heightBlock = height / sizeBlock;
 let score = 0;
 
-let id = setInterval(function() {
-  ctx.clearRect(0, 0, width, height);
-  snake.move();
-  snake.print();
-  apple.print();
-}, 100);
-
 let printBorder = function() {
   ctx.fillStyle = 'black';
   ctx.fillRect(0, 0, width, sizeBlock);
@@ -112,10 +105,10 @@ Snake.prototype.move = function() {
 };
 
 Snake.prototype.checkCollision = function(head) {
-  let leftCollision = head.col === 0;
-  let rightCollision = head.col === widthBlock - 1;
-  let topCollision = head.row === 0;
-  let bottomCollision = head.row === heightBlock - 1;
+  let leftCollision = (head.col === 0);
+  let rightCollision = (head.col === widthBlock - 1);
+  let topCollision = (head.row === 0);
+  let bottomCollision = (head.row === heightBlock - 1);
 
   let wallCollision =
     leftCollision || rightCollision || topCollision || bottomCollision;
@@ -143,13 +136,9 @@ Snake.prototype.setDirection = function(newDirection) {
   this.nextDirection = newDirection;
 };
 
-class Apple {
-  constructor() {
-    let x = Math.floor(Math.random() * (widthBlock - 2)) + 1;
-    let y = Math.floor(Math.random() * (heightBlock - 2)) + 1;
-    this.position = new Block(x, y);
-  }
-}
+let Apple = function(){
+  this.position = new Block(10,10)
+};
 
 Apple.prototype.print = function() {
   this.position.printCircle('green');
@@ -171,6 +160,15 @@ Apple.prototype.move = function(occupiedSegments) {
 let snake = new Snake();
 let apple = new Apple();
 
+let id = setInterval(function() {
+  ctx.clearRect(0, 0, width, height);
+  snake.move();
+  snake.print();
+  apple.print();
+  printBorder();
+}, 100);
+
+
 let direction = {
   37: 'left',
   38: 'top',
@@ -178,10 +176,10 @@ let direction = {
   40: 'bottom'
 };
 
-document.addEventListener('keydown', function(event) {
-  let newDirection = direction[event.keyCode];
 
-  if (newDirection !== undefined) {
-    snake.setDirection(newDirection);
-  }
+document.addEventListener('keydown', function (event) {
+  play.direction(event)
 });
+
+let play = new Snake();
+//play.snake();
